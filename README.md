@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-SpotifyRecSys is a music recommendation system project that aims to provide personalized song recommendations to users based on their preferences and listening history.
+SpotifyRecSys is a song-based recommendation system that aims to provide personalized song recommendations to users based on song features.
 
 ## Table of Contents
 
@@ -13,7 +13,6 @@ SpotifyRecSys is a music recommendation system project that aims to provide pers
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
-- [Usage](#usage)
 - [Data](#data)
 - [Models](#models)
 - [Results](#results)
@@ -23,11 +22,7 @@ SpotifyRecSys is a music recommendation system project that aims to provide pers
 
 ## Features
 
-- Content-based filtering
-- Collaborative filtering
-- User-based recommendations
-- Hybrid recommendations
-- Interactive user interface
+
 
 ## Getting Started
 
@@ -43,3 +38,20 @@ SpotifyRecSys is a music recommendation system project that aims to provide pers
    ```bash
    git clone https://github.com/yourusername/SpotifyRecSys.git
    cd SpotifyRecSys
+
+## Models
+
+- Content-based filtering
+  - Cosine Similarity
+  - Euclidean Distance
+  - Decision Tree / Random Forest
+  - Neural Networks
+- Clustering Algorithms
+  - K-Means Clustering
+  - Hierarchical Clustering
+- Dimensionality Reduction Techniques
+  - Principal Component Analysis (PCA)
+  - t-Distributed Stochastic Neighbor Embedding (t-SNE)
+- Deep Learning Approaches
+  - Convolutional Neural Networks (CNNs)
+  - Autoencoders
