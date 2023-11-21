@@ -17,6 +17,7 @@ SpotifyRecSys is a song-based recommendation system that aims to provide persona
 - [Models](#models)
 - [Results](#results)
 - [Contributing](#contributing)
+- [Resources](#resources)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
 
@@ -55,3 +56,21 @@ SpotifyRecSys is a song-based recommendation system that aims to provide persona
 - Deep Learning Approaches
   - Convolutional Neural Networks (CNNs)
   - Autoencoders
+
+## Resources
+- [Spotify API and Documentation](https://developer.spotify.com/documentation/web-api)
+- Github Repo
+  - [Spotify Recommendation System](https://github.com/abdelrhmanelruby/Spotify-Recommendation-System)
+  - [Music Recommendation System](https://github.com/aliduku/Music_Recommendation_System)
+  - [Spotify Music Recommender](https://github.com/yannansoda/spotify-music-recommender)
+  - [Spotify Recommender Systems](https://github.com/anthonyli358/spotify-recommender-systems)
+  - [Song Recommender System](https://github.com/tushar-mahalya/Songs-Recommender-System)
+  - [Spotify Recommendation System](https://github.com/aayushsss1/Spotify-Music-Recommendation-System)
+- Kaggle Notebook
+  - [Music Recommender (Bonus Streamlit app)](https://www.kaggle.com/code/yannansu/music-recommender-bonus-streamlit-app)
+  - [Music Recommendation System Streamlit](https://www.kaggle.com/code/aliessamali/music-recommendation-system-streamlit/notebook)
+  - [Music Recommendation System using Spotify Dataset](https://www.kaggle.com/code/vatsalmavani/music-recommendation-system-using-spotify-dataset)
+  - [Spotify Data EDA and Music Recommendation](https://www.kaggle.com/code/artempozdniakov/spotify-data-eda-and-music-recommendation)
+  - [Spotify Extensive Analysis & Song Recommender](https://www.kaggle.com/code/ahmadal/spotify-extensive-analysis-song-recommender/notebook)
+- Articles
+  - [Build a Song Recommendation System using Streamlit and Deploy on Heroku](https://towardsdatascience.com/build-a-song-recommendation-system-using-streamlit-and-deploy-on-heroku-375a57ce5e85)
