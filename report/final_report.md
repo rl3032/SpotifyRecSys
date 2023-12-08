@@ -79,6 +79,8 @@ Exploratory Data Analysis (EDA) plays a pivotal role in comprehending the intric
 ### 3.1 Music Over Time
 Music trends evolve over time. By analyzing data over different periods, we can track changes in popularity, the rise and fall of certain musical styles, or the emergence of new ones. For music streaming services like Spotify, understanding historical trends is vital for improving recommendation algorithms. Analyzing how user's preferences changes over time helps in creating more personalzied and dynamic playlists.
 
+We organize the `data` by categorizing it into annual segments, and then calculate the mean for each year. This process results in the creation of `year_data`, a dataset that encapsulates the average values for each year.
+
 <figure>
     <img src="/report/image/popularity_over_year.jpg"
     alt="Popularity Trend Analysis">
@@ -86,7 +88,7 @@ Music trends evolve over time. By analyzing data over different periods, we can 
     </figcaption>
 </figure>
 
-To start with, we analyzed the popularity of tracks over time, from 1921 to the 2020, using the `year_data`. From Figure 3, we have several observations:
+To start with, we analyzed the popularity of tracks over time, from 1922 to the 2020, using the `year_data`. From Figure 3, we have several observations:
 - low popularity in eary years
 - steady growth post-1950s
 - acceleration in growth from the 1960s
