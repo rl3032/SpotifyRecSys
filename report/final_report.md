@@ -16,21 +16,21 @@
 In the era of digital music consumption, personalized recommendation systems have become increasingly important to user experience. Leveraging the vast and diverse Spotify dataset, our project aims to develop a song-based recommendation system.
 
 ## 2. Data Understanding
-In 2020, Yamaç Eren Ay released an extensive Spotify dataset on Kaggle, encompassing over 160,000 songs from the years 1921 to 2020 [1]. Motivated by this valuable resource, our team decided to utilize this dataset, hereafter referred to as `data`, for developing our music recommendation system. Our initial step involved a comprehensive analysis of the song attributes in `data`, along with a detailed understanding of feature definitions obtained from the Spotify Web API.
+In 2020, Yamaç Eren Ay released an extensive Spotify dataset on Kaggle, encompassing over 160,000 songs from the years 1921 to 2020 [1]. In the following year, Yamaç Eren Ay released a larger track dataset that contains over 500,000 songs [1]. Motivated by this valuable resource, our team decided to utilize this new dataset, hereafter referred to as `data`, for developing our music recommendation system. Our initial step involved a comprehensive analysis of the song attributes in `data`, along with a detailed understanding of feature definitions obtained from the Spotify Web API.
 
-We used the `data.shape` method to confirm that data contains 174,389 tracks across 19 features. Additionally, by employing the `data.info()` method, we discovered that within `data`, 9 features are of float type, 6 are integers, and 4 are strings. To provide further clarity, we present a detailed feature definition table, which draws information from the dataset and the Spotify API documentation [2][3]:
+We used the `data.shape` method to confirm that data contains 586,672 tracks across 20 features. Additionally, by employing the `data.info()` method, we discovered that within `data`, 9 features are of float type, 6 are integers, and 5 are strings. To provide further clarity, we present a detailed feature definition table, which draws information from the dataset and the Spotify API documentation [2][3]:
 
 
 | Feature Name     | Type    | Description |
 | ------------     | ------- | ----------- |
 | name             | string  | The name of the track. |
 | artists          | string  | The artists(s) of the track. |
-| year             | integer | The year the track was released. |
 | release_date     | string  | The specific date when the track was released.
 | popularity       | integer | The popularity of the track. The value will be between 0 and 100, with 100 being the most popular. |
 | duration_ms      | integer | Length of the track in milliseconds. |
 | explicit         | integer | Indicates if the track has explicit lyrics (1 = yes, 0 = no or unknown). |
-| id               | string  | The Spotify ID for the track |
+| id               | string  | The Spotify ID for the track. |
+| id_artists       | string  | The Spotify ID for the artist. |
 | acousticness     | float   | A measure from 0.0 to 1.0 indicating how acoustic the track is. |
 | danceability     | float   | Ranges from 0.0 to 1.0, indicating how suitable a track is for dancing. |
 | energy           | float   | A measure from 0.0 to 1.0 indicating the intensity and activity level of a track. |
@@ -42,6 +42,7 @@ We used the `data.shape` method to confirm that data contains 174,389 tracks acr
 | speechiness      | float   | Measures the presence of spoken words, with higher values indicating more speech. |
 | tempo            | float   | The tempo of the track in beats per minute (BPM). |
 | valence          | float   | Measures the musical positiveness of a track, ranging from 0.0 to 1.0. |
+| time_signature   | integer   | Refers to the number of beats in a measure, or bar, of the music.
 
 Based on the feature definitions provided in the Spotify Documentation, we have categorized them into two distinct groups: `track_features` and `audio_features`. The `track_features` group encompasses all the attributes directly associated with the track itself, such as its name, artists, and Spotify ID. In our classification, we have identified 8 features that fall under `track_features`. The figure below presents the `track_features` for the last five tracks in our dataset.
 
@@ -52,7 +53,7 @@ Based on the feature definitions provided in the Spotify Documentation, we have 
 </figure>
 
 
-Meanwhile, the remaining 11 features are categorized as    `audio_features`. These pertain to the musical and acoustic properties of the tracks. The subsequent figure illustrates the `audio_features` for the last five tracks in our dataset.
+Meanwhile, the remaining 12 features are categorized as    `audio_features`. These pertain to the musical and acoustic properties of the tracks. The subsequent figure illustrates the `audio_features` for the last five tracks in our dataset.
 
 
 <figure>
@@ -67,16 +68,13 @@ From above two figures, we noticed that some features are not normalized, such a
 ```
 track_features = ['name', 'artists', 'year', 'release_date','popularity', 'duration_ms', 'explicit', 'id']
 audio_features_normalized = ['acousticness', 'danceability', 'energy', 'instrumentalness', 'liveness', 'speechiness', 'valence']
-audio_features_not_normalized = ['key', 'loudness', 'mode', 'tempo']
+audio_features_not_normalized = ['key', 'loudness', 'mode', 'tempo', 'time_signature']
 ```
 
-Finally, we have thoroughly verified that `data` is complete, with no missing values or duplicates present.
-
-In addition to this primary data source, three supplementary datasets are provided, categorized by genres, years, and artists. These will be referred to respectively as `genre_data`, `year_data`, and `artist_data` [1]. We applied the same procedures to these datasets and confirmed that they are also free from missing values and duplicates. However, it's important to note that `genre_data`, `year_data`, and `artist_data` do not include the Spotify ID for each track. This omission means these datasets are not directly applicable for building our music recommendation system models. Nevertheless, they offer valuable insights for a deeper understanding of the features. We will explore these insights further in the Exploratory Data Analysis section.
+Prior to moving to the data analysis phase, it is crucial to ascertain the completeness of the `data`. Upon examination, it is observed that 71 tracks in the dataset contain missing values in the `name` column. Given that these constitute a minor fraction of the overall dataset, we opt to employ the `data.dropna()` method. This approach effectively removes these incomplete entries, thereby ensuring the integrity and cleanliness of the data for subsequent analysis.
 
 ## 3. Exploratory Data Analysis
-
-TODO: A introduction to EDA is needed
+Exploratory Data Analysis (EDA) plays a pivotal role in comprehending the intricacies of dataset features, discerning underlying patterns and anomalies, and setting the stage for effective model development. In our analysis, we will delve into various dimensions, including temporal trends (time-based analysis), categorical distinctions (genres), and individual contributors (artists). This multifaceted approach ensures a comprehensive understanding of the dataset, paving the way for more informed and accurate modeling.
 
 ### 3.1 Music Over Time
 Music trends evolve over time. By analyzing data over different periods, we can track changes in popularity, the rise and fall of certain musical styles, or the emergence of new ones. For music streaming services like Spotify, understanding historical trends is vital for improving recommendation algorithms. Analyzing how user's preferences changes over time helps in creating more personalzied and dynamic playlists.
