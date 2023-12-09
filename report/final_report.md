@@ -153,12 +153,14 @@ Data on artists and their tracks feed recommendation engines, helping platforms 
     </figcaption>
 </figure>
 
+
 <figure>
     <img src="/report/image/top_15_songs_of_2017.jpg"
     alt="Top 15 Songs by Popularity in 2017">
     <figcaption style="text-align:center">Figure 8: Top 15 Songs by Popularity in 2017
     </figcaption>
 </figure>
+
 Figure 7 presents a bar graph that vividly showcases the popularity of the Top 15 artists in 2017. In this graph, each artist is represented by a bar, with the bar's length directly correlating to their respective popularity scores. Similarly, Figure 8 features a bar graph depicting the popularity of the Top 15 songs from the same year, where each song is represented by a bar whose length signifies its popularity score.
 
 Based on these graphs, it can be inferred that the artists and songs with the highest popularity scores are likely the ones that garnered the most attention and listenership in 2017.
@@ -166,7 +168,7 @@ Based on these graphs, it can be inferred that the artists and songs with the hi
 <figure>
     <img src="/report/image/top_artists_in_last_15_years.jpg"
     alt="Top Artists in Last 15 years">
-    <figcaption style="text-align:center">Figure 8: Top Artists by Decades
+    <figcaption style="text-align:center">Figure 9: Top Artists from 2007 to 2021
     </figcaption>
 </figure>
 
@@ -176,9 +178,39 @@ Comparing this with the insights from the previous three figures, we recognize f
 
 ## 4. Feature Preprocessing
 
+Following our initial data understanding and exploratory data analysis (EDA), the next step is to preprocess the data to ensure it's optimally prepared for model development.
+
+During our review, we identified several areas for preprocessing. Firstly, we observed that certain audio features have yet to be normalized. Normalizing these features is crucial for maintaining consistency across the dataset. Secondly, the `release_date` field offers an opportunity for simplification; we plan to convert this to just the year. Lastly, we noted that the `artists` is currently stored as a list of artist names. To streamline our analysis, we'll need to process this data into a more manageable format.
+
+<figure>
+    <img src="/report/image/final_feature_stat.jpg"
+    alt="Final Feature Statistics">
+    <figcaption style="text-align:center">Figure 10: Final Feature Statistics
+    </figcaption>
+</figure>
+
+In Figure 11, we calcualte the pairwise correlation efficients between all features. Here is the analysis of the matrix:
+
+- `loudness` and `energy` have a high positive correlation of 0.76, suggesting that louder tracks tend to be perceived as more energetic. 
+- `acousticness` has a strong negative correlation with `energy` (-0.71) and `loudness` (-0.52), indicating that acoustic tracks are generally quieter and less energetic.
+- `danceability` and `valence` are positively correlated (0.53), which can imply that songs perceived as more danceable are often happier or more positive.
+
+<figure>
+    <img src="/report/image/feature_correlation_matrix.jpg"
+    alt="Final Feature Statistics">
+    <figcaption style="text-align:center">Figure 11: Feature Correlation Matrix
+    </figcaption>
+</figure>
+
+Although it is standard practice to exclude features with high correlation to prevent multicollinearity in our models, we have chosen to retain the current set of features. This decision is strategic, allowing us the flexibility to directly align our model with the Spotify API for future testing and validation purposes.
 
 ## 5. Model Development
 
+
+### 5.1 K-Mean Clustering
+
+
+### 
 
 ## 6. Model Evaluation
 
