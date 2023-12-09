@@ -4,7 +4,7 @@
  1. [Introduction](#introduction)
  2. [Data Understanding](#data-understanding)
  3. [Exploratory Data Analysis](#exploratory-data-analysis)
- 4. [Feature Engineering](#feature-engineering)
+ 4. [Feature Preprocessing](#feature-preprocessing)
  5. [Model Development](#model-development)
  6. [Model Evaluation](#model-evaluation)
  7. [Result and Discussion](#results-and-discussion)
@@ -147,28 +147,34 @@ For an in-depth analysis of the distribution patterns among the top 15 genres, p
 Data on artists and their tracks feed recommendation engines, helping platforms like Spotify suggest new music to users based on their listening habits, thus improving the user experience.
 
 <figure>
-    <img src="/report/image/top_artists_by_popularity.jpg"
-    alt="Top 15 Artists by Popularity">
-    <figcaption style="text-align:center">Figure 7: Top 15 Artists by Popularity
+    <img src="/report/image/top_15_artists_of_2017.jpg"
+    alt="Top 15 Artists by Popularity in 2017">
+    <figcaption style="text-align:center">Figure 7: Top 15 Artists by Popularity in 2017
     </figcaption>
 </figure>
 
-The bar graph in Figure 7 illustrate the popularity of Top 15 artists. Each bar represents an artist and the length of the bar indicates their popularity score.
+<figure>
+    <img src="/report/image/top_15_songs_of_2017.jpg"
+    alt="Top 15 Songs by Popularity in 2017">
+    <figcaption style="text-align:center">Figure 8: Top 15 Songs by Popularity in 2017
+    </figcaption>
+</figure>
+Figure 7 presents a bar graph that vividly showcases the popularity of the Top 15 artists in 2017. In this graph, each artist is represented by a bar, with the bar's length directly correlating to their respective popularity scores. Similarly, Figure 8 features a bar graph depicting the popularity of the Top 15 songs from the same year, where each song is represented by a bar whose length signifies its popularity score.
 
-The artist with the highest popularity score on this graph could be the most listened to or currently trending. This could be due to recent releases, viral songs, or successful marketing efforts.
+Based on these graphs, it can be inferred that the artists and songs with the highest popularity scores are likely the ones that garnered the most attention and listenership in 2017.
 
 <figure>
-    <img src="/report/image/top_artists_by_decades.jpg"
-    alt="Top Artists by Decades">
+    <img src="/report/image/top_artists_in_last_15_years.jpg"
+    alt="Top Artists in Last 15 years">
     <figcaption style="text-align:center">Figure 8: Top Artists by Decades
     </figcaption>
 </figure>
 
-Figure 8 presents a table of leading artists for each decade, accompanied by their respective popularity ratings. There is an upward trend in the popularity scores, with the 2020s featuring artists with the highest popularity score of 100.0.
+Figure 9 displays a comprehensive table showcasing the top artists for each year from 2007 to 2021, along with their corresponding popularity ratings. Notably, there's a discernible upward trend in these popularity scores, culminating in 2021, which features artists reaching the peak score of 100.0.
 
-More importantly, the absence of recognizable names from the list suggests that our dataset encompasses a limited subset of Spotify's extensive track collection.
+Comparing this with the insights from the previous three figures, we recognize familiar names such as Lady Gaga, Billie Eilish, and Ed Sheeran. Additionally, we identify hit songs like 'Believer', 'Perfect', and 'Something Just Like This'. This overlap of artists and songs across different years and metrics leads to the conclusion that these artists and songs have not only achieved high popularity scores but have also maintained a significant presence and influence in the music industry over this period. Also, the artist analysis implies that our dataset is comprehensive and ready for building machine learning algorithms.
 
-## 4. Feature Engineering
+## 4. Feature Preprocessing
 
 
 ## 5. Model Development
