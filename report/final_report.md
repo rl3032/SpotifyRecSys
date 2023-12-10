@@ -206,11 +206,73 @@ Although it is standard practice to exclude features with high correlation to pr
 
 ## 5. Model Development
 
+Our data is centered around an unsupervised machine learning challenge. To address this, our primary approach involves deploying the k-means clustering algorithm. We will determine the ideal number of clusters (K) using the elbow method and employ dimensionality reduction techniques like t-SNE for effective visualization of the clusters. Additionally, our secondary model will implement a content-based filtering approach, a classic recommendation algorithm, using cosine similarity to identify songs closely resembling our chosen seed song.
 
-### 5.1 K-Mean Clustering
+### 5.1 Euclidean and Cosine Distance
+Both K-Means Clustering and Content-Based Filtering algorithms fundamentally rely on distance measures to assess similarity or dissimilarity between data points. Among the common distance measures, Euclidean and Cosine distances are notably prevalent.
+
+The **Euclidean distance**, often referred to as the straight-line distance, is calculated between two points in a Euclidean space. This measure is derived from the Cartesian coordinates of the points and is particularly intuitive and straightforward to implement. In an n-dimensional Euclidean space, the Euclidean distance $d$ between two points $p$ and $q$, each having n coordinates, is given by the formula:
+
+\[ d(p, q) = \sqrt{\sum_{i=1}^{n} (p_i - q_i)^2} \]
+
+This distance measure is simple yet effective, producing excellent results in various applications, especially when applied to low-dimensional data. Algorithms such as K-Means often exhibit superior performance when Euclidean distance is utilized in such contexts [4].
+
+The **Cosine distance**, commonly referred to as the Cosine similarity, is a measure used to determine the similarity between two non-zero vectors. This metric calculates the cosine of the angle between two vectors in a multi-dimensional space, providing a measure of their orientation, regardless of their magnitude [5].
+
+Mathematically, the cosine similarity $cos(θ)$ between two n-dimensional vectors, $A$ and $B$, is expressed through the dot product and magnitude. This relationship is represented as follows, where $A_{i}$ and $B_{i}$ are the i-th components of vectors $A$ and $B$, respectively [5]:
+
+\[ \cos(\theta) = \frac{\sum_{i=1}^{n} A_i B_i}{\sqrt{\sum_{i=1}^{n} A_i^2} \times \sqrt{\sum_{i=1}^{n} B_i^2}} \]
+
+The value of cosine similarity ranges between -1 and 1. A value of -1 indicates that the two vectors are diametrically opposite, 0 signifies no correlation, and 1 indicates that the vectors are identical [6]. Values between these extremes denote varying degrees of similarity or dissimilarity.
+
+<figure>
+    <img src="/report/image/different_angles_of_cosine_similarities.jpg"
+    alt="Different Angles of Cosine Similarities">
+    <figcaption style="text-align:center">Figure 12: Different Angles of Cosine Similarities [6]
+    </figcaption>
+</figure>
+
+In clustering contexts, cosine similarity is particularly useful when the orientation or direction of the vector is more relevant than its magnitude.
+
+The main difference between Euclidean distance and Cosine similarity is their sensitivity towards the magnitude of vectors: Cosine similarity completely ignores the magnitude of vectors and only cares about the angle between them, while Euclidean distance cares about both the magnitude and direction of the vectors. 
+
+<figure>
+    <img src="/report/image/euclidean_and_cosine_distances.jpg"
+    alt="Euclidean and Cosine Distances">
+    <figcaption style="text-align:center">Figure 13: Euclidean and Cosine Distances [4]
+    </figcaption>
+</figure>
+
+A mathematical example to illustrate would be: If there is a vector with a larger magnitude in the same direction as a vector with a shorter magnitude, they would have a cosine similarity of 1, indicating two vectors are the same (in direction), even though the Euclidean distance between them would be quite large, reflecting the substantial difference in their magnitudes [7].
+
+The difference in the sensitivity towards the magnitude of vectors results in the difference of their applications: Cosine similarity is widely used in cases like text analysis where the frequency of occurrence of terms can often be more relevant than their absolute counts. On the other hand, Euclidean distance can be more appropriate when data is dense or when the magnitude of vectors is significant [8].
+
+### 5.2 K-Mean Clustering
+**Clustering**, a fundamental unsupervised machine learning technique, involves segmenting a dataset into distinct groups or clusters [9]. In this process, data points within each cluster demonstrate similar characteristics or behaviors, making them more akin to each other than to points in different clusters. Clustering algorithms primarily group data based on specific similarities [10].
+
+**K-means** is an essential and efficient clustering algorithm in unsupervised machine learning, used for dividing datasets into K distinct, non-overlapping subgroups or clusters. 
+
+<figure>
+    <img src="/report/image/k-means_clustering_illustration.jpg"
+    alt="K-Means Clustering Illustration">
+    <figcaption style="text-align:center">Figure 14: K-Means Clustering Illustration [9]
+    </figcaption>
+</figure>
+
+The process initiates by selecting K points as cluster centroids randomly. Each data point is then assigned to its nearest centroid, based on Euclidean distance, and centroids are recalculated by averaging the points in each cluster [11]. This assignment and update process iterates until the centroids stabilize and the data points' assignments to clusters cease changing. 
+
+K-means assumes spherical clusters of similar size and can be sensitive to the initial centroid positions, often requiring multiple runs for robustness. Choosing the correct number of clusters, K, is crucial, with methods like the Elbow method and Silhouette analysis assisting in this determination. However, the algorithm's effectiveness can be compromised by outliers, as they can significantly influence centroid positioning.
+
+### 5.3 Elbow Method
+The **elbow method** is a visual technique used in determining the optimal number of clusters, K, for K-means clustering. This method involves calculating the **Within-Cluster Sum of Squares (WCSS)** for various cluster counts. WCSS is the total squared distance between each point in a cluster and the cluster's centroid [12]. 
+
+By varying K from 1 to 10 and plotting WCSS against each K value, a distinctive "elbow" shape often emerges in the graph. This shape occurs because the WCSS tends to decrease as K increases, with the most significant drop typically happening at the optimal K. Initially, when K equals 1, WCSS is at its maximum. As K increases, there's a sharp decrease in WCSS, creating a bend in the graph resembling an elbow. Beyond this point, the graph tends to level off, indicating diminishing returns in reducing WCSS with further increases in K [12]. The K value at this "elbow point" is generally considered the most suitable choice for the number of clusters.
+
+### 5.4 Dimensionality Reduction: t-SNE
 
 
-### 
+### 5.5 Content-based Filtering
+
 
 ## 6. Model Evaluation
 
@@ -219,9 +281,18 @@ Although it is standard practice to exclude features with high correlation to pr
 ## 8. Conclusion and Future Work
 
 ## 9. References
-[1] Y. E. Ay, "Spotify Dataset 1921-2020, 600k+ Tracks," Kaggle, 2020. [Online]. Available: https://www.kaggle.com/datasets/yamaerenay/spotify-dataset-19212020-600k-tracks. Accessed on: November 21, 2023.
-[2] Spotify. "Get Track." Spotify for Developers. [Online]. Available: https://developer.spotify.com/documentation/web-api/reference/get-track. Accessed on: November 22, 2023.
-[3] Spotify. "Get Several Audio Features." Spotify for Developers. [Online]. Available: https://developer.spotify.com/documentation/web-api/reference/get-several-audio-features. Accessed on: November 22, 2023.
+[1] Y. E. Ay, "Spotify Dataset 1921-2020, 600k+ Tracks," Kaggle, 2021. Available: https://www.kaggle.com/datasets/yamaerenay/spotify-dataset-19212020-600k-tracks. Accessed on: November 21, 2023.
+[2] Spotify. "Get Track." Spotify for Developers.  Available: https://developer.spotify.com/documentation/web-api/reference/get-track. Accessed on: November 22, 2023.
+[3] Spotify. "Get Several Audio Features." Spotify for Developers. Available: https://developer.spotify.com/documentation/web-api/reference/get-several-audio-features. Accessed on: November 22, 2023.
+[4] Maarten Grootendorst. "9 Distance Measures in Data Science." Maarten Grootendorst, https://www.maartengrootendorst.com/blog/distances/. Accessed: December 8, 2023.
+[5] "Cosine Similarity." Wikipedia, Wikimedia Foundation, https://en.wikipedia.org/wiki/Cosine_similarity. Accessed: December 8, 2023.
+[6] Shkhanukova, Milana. "Cosine Distance and Cosine Similarity.", Medium, https://medium.com/@milana.shxanukova15/cosine-distance-and-cosine-similarity-a5da0e4d9ded. Accessed: December 8, 2023.
+[7] Ajay Patel. "Relationship between Cosine Similarity and Euclidean Distance.", https://ajayp.app/posts/2020/05/relationship-between-cosine-similarity-and-euclidean-distance/. Accessed: December 8, 2023.
+[8] Rastogi, V. “Euclidean distance and cosine similarity”, Medium, https://medium.com/@vaibhav1403/euclidean-distance-and-cosine-similarity-69cbf8140fed. Accessed: December 8, 2023.
+[9] "Cluster analysis," Wikipedia, The Free Encyclopedia, [Online]. Available: https://en.wikipedia.org/wiki/Cluster_analysis. Accessed: December 9, 2023.
+[10] G. Learning, "Clustering algorithms," Medium, https://medium.com/@mygreatlearning/clustering-algorithms-d7b3ae040a95. Accessed: December 9, 2023.
+[11] N. Sharma, "K-means clustering explained," neptune.ai, https://neptune.ai/blog/k-means-clustering Accessed: December 9, 2023.
+[12] T. Firdose, "Understanding the Elbow Method: Finding the Optimal Number of Clusters," Medium, Available: https://tahera-firdose.medium.com/understanding-the-elbow-method-finding-the-optimal-number-of-clusters-68319d773ea3. Accessed: December 10, 2023.
 
 ## 10. Appendix: Tables and Figures
 
