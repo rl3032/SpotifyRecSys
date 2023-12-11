@@ -344,9 +344,81 @@ PCA is particularly useful in K-means clustering.  By reducing the number of dim
 In our analysis, we applied the outlined steps to our training dataset, which consists of 15 features. We successfully reduced the data to a two-dimensional space, grouping it into four distinct clusters. This optimal number of clusters, `K = 4`, was determined through the application of the elbow method.
 
 ### 5.5 Content-based Filtering
+Generally, recommender systems are algorithms designed to suggest the most suitable items (which could be movies to watch, text to read, products to buy, etc.) to users, tailored to their unique preferences. Such systems could simplify the user's decision-making process by narrowing down choices from a vast number of options. There are two fundamental paradigms used in recommender systems: Collaborative Filtering and Content-Based Filtering [15].
+
+1. **Collaborative Filtering** is based on the principle that users with similar past preferences will probably have similar tastes in the future, so the system generates recommendations using only the past interactions recorded between users and items.
+
+2. **Content-Based Filtering** methods recommend items to users relying on both the users’ preferences and the features of the items they have interacted with.
+
+Since our dataset only contains song tracks related information, we will use the **Item-Centered Approach** from the Content-Based Filtering. This method focuses on leveraging the intrinsic characteristics of songs, such as tempo, rhythm, and lyrics. This method, while efficiently utilizing song features and metadata to find patterns and similarities between tracks, does face limitations. 
+
+Primarily, it lacks personalization, as recommendations are based on general song attributes rather than individual user preferences and interactions. This might lead to over-specialization, where users are continually presented with songs too similar to their past choices, potentially causing a monotonous user experience. Additionally, new songs with limited data might be overlooked, and the system might struggle with introducing variety and serendipity into the recommendations.
+
+### 5.6 Recommendation Algorithms Development
+In the development of our recommendation system, we have designed two distinct algorithms. The first algorithm is built on K-Means Clustering, and the second employs an Item-Centered Approach, primarily utilizing Cosine Similarity as its core mechanism. These approaches, derived from our thorough analysis in previous sections, are tailored to leverage the unique attributes of our song dataset and to address specific challenges in music recommendation.
+
+```python
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+
+def recommend_songs_keans(song_name, data, kmeans_model, scaler, features, top_n=10):
+    """
+    Recommend top n songs closest to the seed song based on KMeans clustering.
+
+    Args:
+        song_name: Name of the song to base recommendations on.
+        data: Pandas DataFrame of song data.
+        kmeans_model: Trained KMeans model.
+        scaler: StandardScaler object used for feature scaling.
+        features: List of features used in clustering.
+        top_n: Number of top recommendations to return.
+
+    Returns:
+        Pandas DataFrame of top n recommended songs closest to the seed song.
+    """
+    if song_name not in data['name'].values:
+        return "Song not found in the dataset."
+
+    # Find the feature vector of the seed song
+    seed_song_features = scaler.transform(data[data['name'] == song_name][features])
+
+    # Predict the cluster for the seed song
+    song_cluster = kmeans_model.predict(seed_song_features)[0]
+
+    # Filter out the songs from the same cluster
+    cluster_songs = data[data['cluster'] == song_cluster]
+
+    # Calculate similarity scores for all songs in the same cluster
+    similarities = cosine_similarity(seed_song_features, scaler.transform(cluster_songs[features]))
+    cluster_songs['similarity'] = np.squeeze(similarities)
+
+    # Sort the songs based on similarity scores
+    recommendations = cluster_songs.sort_values(by='similarity', ascending=False)
+
+    # Exclude the seed song and return the top n songs
+    recommendations = recommendations[recommendations['name'] != song_name]
+    return recommendations[['name', 'artists', 'year']].head(top_n)
+```
+
+The K-Means Clustering algorithm we've developed groups songs into clusters based on their inherent features. This method allows us to recommend songs that are not just similar in a superficial sense but are closely aligned in terms of their underlying characteristics. The steps involved in this recommendation process are as follows:
+
+1. **Feature Vector Extraction:** When a user selects a song, the algorithm first identifies the feature vector of this seed song. This is achieved through the transformation of its features using a pre-fitted StandardScaler, ensuring that the song's features are on the same scale as those used to train the K-Means model.
+
+2. **Cluster Identification:** The algorithm then determines which cluster the seed song belongs to by using the trained K-Means model. This step is crucial as it narrows down the pool of potential recommendations to only those songs that reside in the same cluster.
+
+3. **Cosine Similarity Calculation:** Within the identified cluster, the algorithm calculates the cosine similarity between the seed song and all other songs. This similarity score quantifies how close each song in the cluster is to the seed song in terms of their features.
+
+4. **Sorting and Recommendation:** The songs are then sorted based on their similarity scores. The higher the score, the more similar the song is to the seed song. The algorithm finally presents the top `n` songs as recommendations, excluding the seed song itself.
 
 
 ## 6. Model Evaluation
+Given that our dataset is exclusively song-centric, assessing the performance of our recommendation algorithms presents a unique challenge. Traditional evaluation methods commonly applied to unsupervised learning algorithms are not entirely suitable in this context. To address this, we've opted for industry-standard metrics specifically tailored for evaluating recommendation systems. These metrics include diversity, novelty, and top-k accuracy.
+
+**Diversity** refers to the level of dissimilarity among the recommended items for a user. This dissimilarity can be assessed based on the content of the items, such as differences in music genres, or it can be evaluated based on the variation in how users rate these items [16].
+
+**Novelty** evaluates the freshness of items in a recommendation. It includes two dimensions: user-dependent and user-independent novelty. user-dependent novelty assesses the degree to which the recommendations are distinct or new to a specific user, signifying the introduction of previously undiscovered or untried content. Conversely, user-independent novelty focuses on the overall newness of the recommendations within the entire system, irrespective of individual user familiarity [17]. In our evaluation, we will use user-independent novelty.
+
+**Top-K accuracy** is a vital metric in evaluating recommendation systems, particularly emphasizing the system's precision in predicting the most relevant items and placing them within the top `K` positions of a recommendation list [18]. This metric assumes significance in practical scenarios where users typically consider only the first few recommendations. It assesses the likelihood of the user finding the recommended items genuinely relevant or useful, especially among the top few suggestions [18]. Accurately capturing this aspect is crucial for understanding the practical effectiveness of a recommendation system in real-world user interactions.
 
 ## 7. Result and Discussion
 
@@ -367,6 +439,12 @@ In our analysis, we applied the outlined steps to our training dataset, which co
 [12] T. Firdose, "Understanding the Elbow Method: Finding the Optimal Number of Clusters," Medium, Available: https://tahera-firdose.medium.com/understanding-the-elbow-method-finding-the-optimal-number-of-clusters-68319d773ea3. Accessed: December 10, 2023.
 [13] "Principal component analysis," Wikipedia, The Free Encyclopedia, Available: https://en.wikipedia.org/wiki/Principal_component_analysis. Accessed: December 11, 2023.
 [14] "Dimensionality reduction: PCA, tsne, umap," Auriga IT, https://aurigait.com/blog/blog-easy-explanation-of-dimensionality-reduction-and-techniques/ Accessed: December 11, 2023.
+[15] Rocca, Baptiste. "Introduction to Recommender Systems." Medium, Towards Data Science, https://towardsdatascience.com/introduction-to-recommender-systems-6c66cf15ada Accessed: December 10, 2023.
+[16] B, Anna. "Recommender Systems - It’s Not All about the Accuracy." Medium, https://gab41.lab41.org/recommender-systems-its-not-all-about-the-accuracy-562c7dceeaff. 
+Accessed: December 11, 2023.
+[17] Pabalan, Christabelle. "Beyond Accuracy: Embracing Serendipity and Novelty in Recommendations for Long Term User Retention." Towards Data Science, https://towardsdatascience.com/beyond-accuracy-embracing-serendipity-and-novelty-in-recommendations-for-long-term-user-retention-701a23b1cb34. Accessed: December 11, 2023.
+[18] S. Kapre, "Common metrics to evaluate recommendation systems," Medium, [Online]. Available: https://flowthytensor.medium.com/some-metrics-to-evaluate-recommendation-systems-9e0cf0c8b6cf. Accessed: December 11, 2023.
+
 
 ## 10. Appendix: Tables and Figures
 
