@@ -261,15 +261,87 @@ The difference in the sensitivity towards the magnitude of vectors results in th
 
 The process initiates by selecting K points as cluster centroids randomly. Each data point is then assigned to its nearest centroid, based on Euclidean distance, and centroids are recalculated by averaging the points in each cluster [11]. This assignment and update process iterates until the centroids stabilize and the data points' assignments to clusters cease changing. 
 
-K-means assumes spherical clusters of similar size and can be sensitive to the initial centroid positions, often requiring multiple runs for robustness. Choosing the correct number of clusters, K, is crucial, with methods like the Elbow method and Silhouette analysis assisting in this determination. However, the algorithm's effectiveness can be compromised by outliers, as they can significantly influence centroid positioning.
+
+#### Steps:
+
+1. **Specify the number `k` of clusters to assign.**
+   - `k` is a hyperparameter that defines the number of clusters to be created.
+   
+2. **Randomly initialize `k` centroids.**
+   - The centroids are the initial guesses for the location of the cluster centers.
+   
+3. **Repeat the following steps until the centroid positions do not change:**
+
+   a. **Expectation:** 
+      - Assign each point to its closest centroid.
+      - This creates a "cluster assignment" for each point.
+
+   b. **Maximization:** 
+      - Compute the new centroid (mean) of each cluster.
+      - The mean is calculated by averaging the points in each cluster.
+
+4. **Termination Condition:**
+    - The algorithm stops iterating when the centroids do not move significantly, indicating that the clusters are stable.
+
+K-means assumes spherical clusters of similar size and can be sensitive to the initial centroid positions, often requiring multiple runs for robustness. Choosing the correct number of clusters, K, is crucial, with methods like the Elbow method and Silhouette analysis assisting in this determination [9]. However, the algorithm's effectiveness can be compromised by outliers, as they can significantly influence centroid positioning.
 
 ### 5.3 Elbow Method
-The **elbow method** is a visual technique used in determining the optimal number of clusters, K, for K-means clustering. This method involves calculating the **Within-Cluster Sum of Squares (WCSS)** for various cluster counts. WCSS is the total squared distance between each point in a cluster and the cluster's centroid [12]. 
+The **elbow method** is a visual technique used in determining the optimal number of clusters, *K*, for K-means clustering. This method involves calculating the **Within-Cluster Sum of Squares (WCSS)** for various cluster counts. WCSS is the total squared distance between each point in a cluster and the cluster's centroid [12]. We employ the following Python code, utilizing the `sklearn`.cluster module, to implement the elbow method:
 
-By varying K from 1 to 10 and plotting WCSS against each K value, a distinctive "elbow" shape often emerges in the graph. This shape occurs because the WCSS tends to decrease as K increases, with the most significant drop typically happening at the optimal K. Initially, when K equals 1, WCSS is at its maximum. As K increases, there's a sharp decrease in WCSS, creating a bend in the graph resembling an elbow. Beyond this point, the graph tends to level off, indicating diminishing returns in reducing WCSS with further increases in K [12]. The K value at this "elbow point" is generally considered the most suitable choice for the number of clusters.
+```python
+from sklearn.cluster import KMeans
 
-### 5.4 Dimensionality Reduction: t-SNE
+def perform_elbow_method(data_scaled, range_clusters):
+    """
+    Perform elbow method on standardized data.
 
+    Args:
+        data_scaled: Numpy array of standardized features.
+        range_clusters: Range of clusters to use.
+    
+    Returns:
+        List of inertia values.
+    """
+    inertia = []
+    for i in range(1, range_clusters+1):
+        kmeans = KMeans(n_clusters=i)
+        kmeans.fit(data_scaled)
+        inertia.append(kmeans.inertia_)
+    return inertia
+```
+
+By varying K from 1 to `range_clusters` and plotting WCSS against each *K* value, a distinctive "elbow" shape often emerges in the graph. This shape occurs because the WCSS tends to decrease as *K* increases, with the most significant drop typically happening at the optimal *K*. Initially, when *K* equals 1, WCSS is at its maximum. As *K* increases, there's a sharp decrease in WCSS, creating a bend in the graph resembling an elbow. Beyond this point, the graph tends to level off, indicating diminishing returns in reducing WCSS with further increases in *K* [12]. The *K* value at this "elbow point" is generally considered the most suitable choice for the number of clusters. For our data, the optimal *K* value is 4.
+
+<figure>
+    <img src="/report/image/elbow_method.jpg"
+    alt="Perform Elbow Method to Choose Optimal K">
+    <figcaption style="text-align:center">Figure 15: Perform Elbow Method to Choose Optimal K
+    </figcaption>
+</figure>
+
+### 5.4 Principal Component Analysis
+Principal Component Analysis (PCA) is a cornerstone technique in dimensionality reduction, extensively utilized in data analysis and machine learning [13]. The essence of PCA lies in its ability to discern and highlight patterns in the relationships between variables, subsequently representing these patterns with fewer, more potent variables known as principal components. The PCA procedure unfolds through several methodical steps:
+
+1. **Standardization:** Given that input variables often vary in scale, standardizing these variables is crucial. This process involves adjusting the data to have a mean of zero and a unit variance, ensuring each variable contributes equitably to the analysis.
+
+2. **Covariance Matrix Calculation:** Post-standardization, the next stride is computing the covariance matrix for the standardized data. This matrix captures the pairwise relationships between variables, offering insights into their joint variability.
+
+3. **Eigenvalue Decomposition:** The covariance matrix undergoes eigenvalue decomposition to extract its eigenvectors and eigenvalues. The eigenvectors delineate the principal components, essentially the new axes of data variation, while the eigenvalues quantify the variance captured by each principal component. These eigenvectors are ranked in descending order of their corresponding eigenvalues.
+
+4. **Selection of Principal Components:** Choosing the right number of principal components is a strategic decision. It's typically guided by the cumulative explained variance criterion, where principal components are selected based on their collective contribution to the total variance (e.g., 95% or 99%).
+
+5. **Projection:** The final step involves projecting the original data onto the new feature subspace formed by the selected principal components. This transformation, achieved by multiplying the standardized data with the matrix of chosen eigenvectors, results in a dataset with reduced dimensionality.
+
+PCA is particularly useful in K-means clustering.  By reducing the number of dimensions without significant loss of information, PCA simplifies the clustering process, making it computationally more efficient and less prone to overfitting [14].
+
+<figure>
+    <img src="/report/image/pca_result.jpg"
+    alt="Perform PCA Dimension Reduction">
+    <figcaption style="text-align:center">Figure 16: Perform PCA Dimension Reduction
+    </figcaption>
+</figure>
+
+In our analysis, we applied the outlined steps to our training dataset, which consists of 15 features. We successfully reduced the data to a two-dimensional space, grouping it into four distinct clusters. This optimal number of clusters, `K = 4`, was determined through the application of the elbow method.
 
 ### 5.5 Content-based Filtering
 
@@ -293,6 +365,8 @@ By varying K from 1 to 10 and plotting WCSS against each K value, a distinctive 
 [10] G. Learning, "Clustering algorithms," Medium, https://medium.com/@mygreatlearning/clustering-algorithms-d7b3ae040a95. Accessed: December 9, 2023.
 [11] N. Sharma, "K-means clustering explained," neptune.ai, https://neptune.ai/blog/k-means-clustering Accessed: December 9, 2023.
 [12] T. Firdose, "Understanding the Elbow Method: Finding the Optimal Number of Clusters," Medium, Available: https://tahera-firdose.medium.com/understanding-the-elbow-method-finding-the-optimal-number-of-clusters-68319d773ea3. Accessed: December 10, 2023.
+[13] "Principal component analysis," Wikipedia, The Free Encyclopedia, Available: https://en.wikipedia.org/wiki/Principal_component_analysis. Accessed: December 11, 2023.
+[14] "Dimensionality reduction: PCA, tsne, umap," Auriga IT, https://aurigait.com/blog/blog-easy-explanation-of-dimensionality-reduction-and-techniques/ Accessed: December 11, 2023.
 
 ## 10. Appendix: Tables and Figures
 
