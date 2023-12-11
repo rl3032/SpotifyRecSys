@@ -1,6 +1,8 @@
 import requests
 import base64
 import configparser
+import pandas as pd
+import csv
 
 # Load Spotify API credentials from config file
 config = configparser.ConfigParser()
@@ -68,60 +70,85 @@ def get_track_id(track_name, access_token, artist_name=None, release_year=None):
         print(f"Error searching track ID: {e}")
 
 
-# Get spotify recommendations
-def get_recommendations(track_id, access_token, limit=30, market=None):
-    try:
-        recommendations_url = "https://api.spotify.com/v1/recommendations"
-        recommendations_params = {
-            "limit": limit,
+# Function to get recommendations from Spotify API
+def get_recommendations(track_id, access_token, total_songs=500, market=None):
+    recommendations = []
+    url = "https://api.spotify.com/v1/recommendations"
+
+    while len(recommendations) < total_songs:
+        params = {
+            "limit": min(100, total_songs - len(recommendations)),  # Request maximum of 100 songs at a time
             "seed_tracks": track_id
         }
         if market:
-            recommendations_params["market"] = market
+            params["market"] = market
 
-        recommendations_headers = {
+        headers = {
             "Authorization": f"Bearer {access_token}"
         }
 
-        recommendations_response = requests.get(recommendations_url, headers=recommendations_headers, params=recommendations_params)
-        return recommendations_response.json()
-    except Exception as e:
-        print(f"Error getting recommendations: {e}")
+        response = requests.get(url, headers=headers, params=params)
+        if response.status_code != 200:
+            print(f"Error: {response.status_code} - {response.text}")
+            break
+
+        data = response.json()
+        recommendations.extend(data['tracks'])
+
+    return recommendations
 
 
-# Handle result
-def extract_track_info(recommendations_json):
-    track_info_list = []
+# Function to read CSV and return a DataFrame
+def read_final_data(file_path: str) -> pd.DataFrame:
+    return pd.read_csv(file_path)
 
-    for track in recommendations_json['tracks']:
-        track_name = track['name']
-        artists = ', '.join(artist['name'] for artist in track['artists'])
-        release_date = track['album']['release_date']
 
-        track_info = {
-            'song_name': track_name,
-            'artists': artists,
-            'release_date': release_date
-        }
+def filter_songs(recommendations, final_data_df):
+    # final_data_set = set(zip(final_data_df['name'], final_data_df['year'].astype(str)))
+    final_data_set = set(zip(final_data_df['name'], final_data_df['year'].astype(str), final_data_df['artists']))
+    filtered_songs = []
+    for song in recommendations:
+        song_name = song['name']
+        release_year = song['album']['release_date'][:4]
+        artists = ', '.join(artist['name'] for artist in song['artists'])
 
-        track_info_list.append(track_info)
+        if (song_name, release_year, artists) in final_data_set:
+            filtered_songs.append(song)
 
-    return track_info_list
+    return filtered_songs
+
+
+# Function to write the filtered songs to a new CSV file
+def write_filtered_songs_to_csv(songs, file_path: str):
+    seen_songs = set()
+    with open(file_path, mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.DictWriter(file, fieldnames=['song_name', 'year', 'artists'])
+        writer.writeheader()
+        for song in songs:
+            song_tuple = (song['name'], song['album']['release_date'][:4], ', '.join(artist['name'] for artist in song['artists']))
+            if song_tuple not in seen_songs:
+                writer.writerow({'song_name': song['name'], 'year': song['album']['release_date'][:4],
+                                 'artists': ', '.join(artist['name'] for artist in song['artists'])})
+                seen_songs.add(song_tuple)
 
 
 def main():
     try:
         access_token = get_access_token(client_id, client_secret)
-        song_name = "Story of My Life"
-        artist_name = "One Direction"
-        release_year = 2013
+        song_name = "Shape of You"
+        # artist_name = "One Direction"
+        # release_year = 2013
         # track_id = get_track_id(song_name, access_token, artist_name, release_year)
         track_id = get_track_id(song_name, access_token)
-        recommendations = get_recommendations(track_id, access_token)
-        track_info_list = extract_track_info(recommendations)
-        for info in track_info_list:
-            print(f"Song Name: {info['song_name']}, Artists: {info['artists']}, Release Date: {info['release_date']}")
-        return track_info_list
+        recommendations = get_recommendations(track_id, access_token, 500)
+        final_data_df = read_final_data('../data/processed/final_data.csv')
+        filtered_songs = filter_songs(recommendations, final_data_df)
+        for song in filtered_songs:
+            song_name = song['name']
+            release_year = song['album']['release_date'][:4]
+            artists = ', '.join(artist['name'] for artist in song['artists'])
+            print(f"Song Name: {song_name}, Year: {release_year}, Artists: {artists}")
+        write_filtered_songs_to_csv(filtered_songs, '../data/processed/filtered_songs.csv')
     except Exception as e:
         print(f"An error occurred: {e}")
 
