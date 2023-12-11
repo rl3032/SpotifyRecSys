@@ -357,6 +357,7 @@ Primarily, it lacks personalization, as recommendations are based on general son
 ### 5.6 Recommendation Algorithms Development
 In the development of our recommendation system, we have designed two distinct algorithms. The first algorithm is built on K-Means Clustering, and the second employs an Item-Centered Approach, primarily utilizing Cosine Similarity as its core mechanism. These approaches, derived from our thorough analysis in previous sections, are tailored to leverage the unique attributes of our song dataset and to address specific challenges in music recommendation.
 
+**Model 1: K-Means Clustering Algorithm**
 ```python
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
@@ -400,7 +401,7 @@ def recommend_songs_keans(song_name, data, kmeans_model, scaler, features, top_n
     return recommendations[['name', 'artists', 'year']].head(top_n)
 ```
 
-The K-Means Clustering algorithm we've developed groups songs into clusters based on their inherent features. This method allows us to recommend songs that are not just similar in a superficial sense but are closely aligned in terms of their underlying characteristics. The steps involved in this recommendation process are as follows:
+The K-Means Clustering algorithm we have developed groups songs into clusters based on their inherent features. This method allows us to recommend songs that are not just similar in a superficial sense but are closely aligned in terms of their underlying characteristics. The steps involved in this recommendation process are as follows:
 
 1. **Feature Vector Extraction:** When a user selects a song, the algorithm first identifies the feature vector of this seed song. This is achieved through the transformation of its features using a pre-fitted StandardScaler, ensuring that the song's features are on the same scale as those used to train the K-Means model.
 
@@ -410,6 +411,59 @@ The K-Means Clustering algorithm we've developed groups songs into clusters base
 
 4. **Sorting and Recommendation:** The songs are then sorted based on their similarity scores. The higher the score, the more similar the song is to the seed song. The algorithm finally presents the top `n` songs as recommendations, excluding the seed song itself.
 
+**Model 2: Item-Centered Content-Based Filtering**
+```python
+def recommend_songs_content_based(song_name, data, scaler, features, top_n=10, popularity_weight=0.5):
+    """
+    Recommend top n songs based on a mix of cosine similarity and popularity.
+
+    Args:
+        song_name: Name of the seed song to base recommendations on.
+        data: Pandas DataFrame of song data.
+        scaler: StandardScaler object used for feature scaling.
+        features: List of features used in clustering.
+        top_n: Number of top recommendations to return.
+        popularity_weight: Weight for popularity in the final score (0 to 1).
+
+    Returns:
+        Pandas DataFrame of top n recommended songs.
+    """
+    if song_name not in data['name'].values:
+        return "Seed song not found in the dataset."
+
+    # Find the feature vector of the seed song
+    song_features = scaler.transform(data[data['name'] == song_name][features])
+
+    # Calculate similarity scores for all songs
+    similarities = cosine_similarity(song_features, scaler.transform(data[features]))
+    data['similarity'] = np.squeeze(similarities)
+
+    # Normalize popularity
+    data['normalized_popularity'] = data['popularity'] / data['popularity'].max()
+
+    # Combine similarity and popularity
+    data['score'] = (1 - popularity_weight) * data['similarity'] + popularity_weight * data['normalized_popularity']
+
+    # Sort the songs based on the combined score
+    recommendations = data.sort_values(by='score', ascending=False)
+
+    # Exclude the seed song and return the top n songs
+    recommendations = recommendations[recommendations['name'] != song_name]
+    return recommendations[['name', 'artists', 'year', 'score']].head(top_n)
+```
+
+The Item-Centered Content-Based Filtering algorithm developed for song recommendations operates by evaluating the intrinsic features of the songs. It offers recommendations that are deeply aligned with the specific characteristics of the chosen seed song. The key steps in this process are:
+
+1. **Feature Vector Extraction:** The algorithm starts by identifying the feature vector of the selected seed song. It does this by transforming the song's features using a StandardScaler, which ensures consistency in scale with the features used in the model's training.
+
+2. **Cosine Similarity Calculation:** Unlike the K-Means model, this method directly calculates the cosine similarity between the seed song and all other songs in the dataset, measuring how closely they match in terms of their features.
+
+3. **Popularity Integration:** It then incorporates the popularity aspect, normalizing popularity scores, and blending them with the similarity scores. This creates a balanced metric that considers both how similar a song is to the seed song and its overall popularity.
+
+4. **Sorting and Recommendation:** The songs are sorted based on this composite score, and the top n songs, excluding the seed song itself, are presented as recommendations.
+
+
+In summary, K-Means Clustering Algorithm groups songs into clusters based on their features. Recommendations are made by first identifying the cluster of a selected seed song and then recommending songs within that cluster based on their similarity to the seed song. Item-Centered Content-Based Filtering calculates recommendations by directly comparing the features of the seed song to all songs in the dataset, incorporating popularity into the scoring. This model offers a more direct, feature-focused approach compared to the cluster-based strategy.
 
 ## 6. Model Evaluation
 Given that our dataset is exclusively song-centric, assessing the performance of our recommendation algorithms presents a unique challenge. Traditional evaluation methods commonly applied to unsupervised learning algorithms are not entirely suitable in this context. To address this, we've opted for industry-standard metrics specifically tailored for evaluating recommendation systems. These metrics include diversity, novelty, and top-k accuracy.
