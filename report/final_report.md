@@ -206,22 +206,245 @@ Although it is standard practice to exclude features with high correlation to pr
 
 ## 5. Model Development
 
+Our data is centered around an unsupervised machine learning challenge. To address this, our primary approach involves deploying the k-means clustering algorithm. We will determine the ideal number of clusters (K) using the elbow method and employ dimensionality reduction techniques like t-SNE for effective visualization of the clusters. Additionally, our secondary model will implement a content-based filtering approach, a classic recommendation algorithm, using cosine similarity to identify songs closely resembling our chosen seed song.
 
-### 5.1 K-Mean Clustering
+### 5.1 Euclidean and Cosine Distance
+Both K-Means Clustering and Content-Based Filtering algorithms fundamentally rely on distance measures to assess similarity or dissimilarity between data points. Among the common distance measures, Euclidean and Cosine distances are notably prevalent.
+
+The **Euclidean distance**, often referred to as the straight-line distance, is calculated between two points in a Euclidean space. This measure is derived from the Cartesian coordinates of the points and is particularly intuitive and straightforward to implement. In an n-dimensional Euclidean space, the Euclidean distance $d$ between two points $p$ and $q$, each having n coordinates, is given by the formula:
+
+\[ d(p, q) = \sqrt{\sum_{i=1}^{n} (p_i - q_i)^2} \]
+
+This distance measure is simple yet effective, producing excellent results in various applications, especially when applied to low-dimensional data. Algorithms such as K-Means often exhibit superior performance when Euclidean distance is utilized in such contexts [4].
+
+The **Cosine distance**, commonly referred to as the Cosine similarity, is a measure used to determine the similarity between two non-zero vectors. This metric calculates the cosine of the angle between two vectors in a multi-dimensional space, providing a measure of their orientation, regardless of their magnitude [5].
+
+Mathematically, the cosine similarity $cos(θ)$ between two n-dimensional vectors, $A$ and $B$, is expressed through the dot product and magnitude. This relationship is represented as follows, where $A_{i}$ and $B_{i}$ are the i-th components of vectors $A$ and $B$, respectively [5]:
+
+\[ \cos(\theta) = \frac{\sum_{i=1}^{n} A_i B_i}{\sqrt{\sum_{i=1}^{n} A_i^2} \times \sqrt{\sum_{i=1}^{n} B_i^2}} \]
+
+The value of cosine similarity ranges between -1 and 1. A value of -1 indicates that the two vectors are diametrically opposite, 0 signifies no correlation, and 1 indicates that the vectors are identical [6]. Values between these extremes denote varying degrees of similarity or dissimilarity.
+
+<figure>
+    <img src="/report/image/different_angles_of_cosine_similarities.jpg"
+    alt="Different Angles of Cosine Similarities">
+    <figcaption style="text-align:center">Figure 12: Different Angles of Cosine Similarities [6]
+    </figcaption>
+</figure>
+
+In clustering contexts, cosine similarity is particularly useful when the orientation or direction of the vector is more relevant than its magnitude.
+
+The main difference between Euclidean distance and Cosine similarity is their sensitivity towards the magnitude of vectors: Cosine similarity completely ignores the magnitude of vectors and only cares about the angle between them, while Euclidean distance cares about both the magnitude and direction of the vectors. 
+
+<figure>
+    <img src="/report/image/euclidean_and_cosine_distances.jpg"
+    alt="Euclidean and Cosine Distances">
+    <figcaption style="text-align:center">Figure 13: Euclidean and Cosine Distances [4]
+    </figcaption>
+</figure>
+
+A mathematical example to illustrate would be: If there is a vector with a larger magnitude in the same direction as a vector with a shorter magnitude, they would have a cosine similarity of 1, indicating two vectors are the same (in direction), even though the Euclidean distance between them would be quite large, reflecting the substantial difference in their magnitudes [7].
+
+The difference in the sensitivity towards the magnitude of vectors results in the difference of their applications: Cosine similarity is widely used in cases like text analysis where the frequency of occurrence of terms can often be more relevant than their absolute counts. On the other hand, Euclidean distance can be more appropriate when data is dense or when the magnitude of vectors is significant [8].
+
+### 5.2 K-Mean Clustering
+**Clustering**, a fundamental unsupervised machine learning technique, involves segmenting a dataset into distinct groups or clusters [9]. In this process, data points within each cluster demonstrate similar characteristics or behaviors, making them more akin to each other than to points in different clusters. Clustering algorithms primarily group data based on specific similarities [10].
+
+**K-means** is an essential and efficient clustering algorithm in unsupervised machine learning, used for dividing datasets into K distinct, non-overlapping subgroups or clusters. 
+
+<figure>
+    <img src="/report/image/k-means_clustering_illustration.jpg"
+    alt="K-Means Clustering Illustration">
+    <figcaption style="text-align:center">Figure 14: K-Means Clustering Illustration [9]
+    </figcaption>
+</figure>
+
+The process initiates by selecting K points as cluster centroids randomly. Each data point is then assigned to its nearest centroid, based on Euclidean distance, and centroids are recalculated by averaging the points in each cluster [11]. This assignment and update process iterates until the centroids stabilize and the data points' assignments to clusters cease changing. 
 
 
-### 
+#### Steps:
+
+1. **Specify the number `k` of clusters to assign.**
+   - `k` is a hyperparameter that defines the number of clusters to be created.
+   
+2. **Randomly initialize `k` centroids.**
+   - The centroids are the initial guesses for the location of the cluster centers.
+   
+3. **Repeat the following steps until the centroid positions do not change:**
+
+   a. **Expectation:** 
+      - Assign each point to its closest centroid.
+      - This creates a "cluster assignment" for each point.
+
+   b. **Maximization:** 
+      - Compute the new centroid (mean) of each cluster.
+      - The mean is calculated by averaging the points in each cluster.
+
+4. **Termination Condition:**
+    - The algorithm stops iterating when the centroids do not move significantly, indicating that the clusters are stable.
+
+K-means assumes spherical clusters of similar size and can be sensitive to the initial centroid positions, often requiring multiple runs for robustness. Choosing the correct number of clusters, K, is crucial, with methods like the Elbow method and Silhouette analysis assisting in this determination [9]. However, the algorithm's effectiveness can be compromised by outliers, as they can significantly influence centroid positioning.
+
+### 5.3 Elbow Method
+The **elbow method** is a visual technique used in determining the optimal number of clusters, *K*, for K-means clustering. This method involves calculating the **Within-Cluster Sum of Squares (WCSS)** for various cluster counts. WCSS is the total squared distance between each point in a cluster and the cluster's centroid [12]. We employ the following Python code, utilizing the `sklearn`.cluster module, to implement the elbow method:
+
+```python
+from sklearn.cluster import KMeans
+
+def perform_elbow_method(data_scaled, range_clusters):
+    """
+    Perform elbow method on standardized data.
+
+    Args:
+        data_scaled: Numpy array of standardized features.
+        range_clusters: Range of clusters to use.
+    
+    Returns:
+        List of inertia values.
+    """
+    inertia = []
+    for i in range(1, range_clusters+1):
+        kmeans = KMeans(n_clusters=i)
+        kmeans.fit(data_scaled)
+        inertia.append(kmeans.inertia_)
+    return inertia
+```
+
+By varying K from 1 to `range_clusters` and plotting WCSS against each *K* value, a distinctive "elbow" shape often emerges in the graph. This shape occurs because the WCSS tends to decrease as *K* increases, with the most significant drop typically happening at the optimal *K*. Initially, when *K* equals 1, WCSS is at its maximum. As *K* increases, there's a sharp decrease in WCSS, creating a bend in the graph resembling an elbow. Beyond this point, the graph tends to level off, indicating diminishing returns in reducing WCSS with further increases in *K* [12]. The *K* value at this "elbow point" is generally considered the most suitable choice for the number of clusters. For our data, the optimal *K* value is 4.
+
+<figure>
+    <img src="/report/image/elbow_method.jpg"
+    alt="Perform Elbow Method to Choose Optimal K">
+    <figcaption style="text-align:center">Figure 15: Perform Elbow Method to Choose Optimal K
+    </figcaption>
+</figure>
+
+### 5.4 Principal Component Analysis
+Principal Component Analysis (PCA) is a cornerstone technique in dimensionality reduction, extensively utilized in data analysis and machine learning [13]. The essence of PCA lies in its ability to discern and highlight patterns in the relationships between variables, subsequently representing these patterns with fewer, more potent variables known as principal components. The PCA procedure unfolds through several methodical steps:
+
+1. **Standardization:** Given that input variables often vary in scale, standardizing these variables is crucial. This process involves adjusting the data to have a mean of zero and a unit variance, ensuring each variable contributes equitably to the analysis.
+
+2. **Covariance Matrix Calculation:** Post-standardization, the next stride is computing the covariance matrix for the standardized data. This matrix captures the pairwise relationships between variables, offering insights into their joint variability.
+
+3. **Eigenvalue Decomposition:** The covariance matrix undergoes eigenvalue decomposition to extract its eigenvectors and eigenvalues. The eigenvectors delineate the principal components, essentially the new axes of data variation, while the eigenvalues quantify the variance captured by each principal component. These eigenvectors are ranked in descending order of their corresponding eigenvalues.
+
+4. **Selection of Principal Components:** Choosing the right number of principal components is a strategic decision. It's typically guided by the cumulative explained variance criterion, where principal components are selected based on their collective contribution to the total variance (e.g., 95% or 99%).
+
+5. **Projection:** The final step involves projecting the original data onto the new feature subspace formed by the selected principal components. This transformation, achieved by multiplying the standardized data with the matrix of chosen eigenvectors, results in a dataset with reduced dimensionality.
+
+PCA is particularly useful in K-means clustering.  By reducing the number of dimensions without significant loss of information, PCA simplifies the clustering process, making it computationally more efficient and less prone to overfitting [14].
+
+<figure>
+    <img src="/report/image/pca_result.jpg"
+    alt="Perform PCA Dimension Reduction">
+    <figcaption style="text-align:center">Figure 16: Perform PCA Dimension Reduction
+    </figcaption>
+</figure>
+
+In our analysis, we applied the outlined steps to our training dataset, which consists of 15 features. We successfully reduced the data to a two-dimensional space, grouping it into four distinct clusters. This optimal number of clusters, `K = 4`, was determined through the application of the elbow method.
+
+### 5.5 Content-based Filtering
+Generally, recommender systems are algorithms designed to suggest the most suitable items (which could be movies to watch, text to read, products to buy, etc.) to users, tailored to their unique preferences. Such systems could simplify the user's decision-making process by narrowing down choices from a vast number of options. There are two fundamental paradigms used in recommender systems: Collaborative Filtering and Content-Based Filtering [15].
+
+1. **Collaborative Filtering** is based on the principle that users with similar past preferences will probably have similar tastes in the future, so the system generates recommendations using only the past interactions recorded between users and items.
+
+2. **Content-Based Filtering** methods recommend items to users relying on both the users’ preferences and the features of the items they have interacted with.
+
+Since our dataset only contains song tracks related information, we will use the **Item-Centered Approach** from the Content-Based Filtering. This method focuses on leveraging the intrinsic characteristics of songs, such as tempo, rhythm, and lyrics. This method, while efficiently utilizing song features and metadata to find patterns and similarities between tracks, does face limitations. 
+
+Primarily, it lacks personalization, as recommendations are based on general song attributes rather than individual user preferences and interactions. This might lead to over-specialization, where users are continually presented with songs too similar to their past choices, potentially causing a monotonous user experience. Additionally, new songs with limited data might be overlooked, and the system might struggle with introducing variety and serendipity into the recommendations.
+
+### 5.6 Recommendation Algorithms Development
+In the development of our recommendation system, we have designed two distinct algorithms. The first algorithm is built on K-Means Clustering, and the second employs an Item-Centered Approach, primarily utilizing Cosine Similarity as its core mechanism. These approaches, derived from our thorough analysis in previous sections, are tailored to leverage the unique attributes of our song dataset and to address specific challenges in music recommendation.
+
+```python
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+
+def recommend_songs_keans(song_name, data, kmeans_model, scaler, features, top_n=10):
+    """
+    Recommend top n songs closest to the seed song based on KMeans clustering.
+
+    Args:
+        song_name: Name of the song to base recommendations on.
+        data: Pandas DataFrame of song data.
+        kmeans_model: Trained KMeans model.
+        scaler: StandardScaler object used for feature scaling.
+        features: List of features used in clustering.
+        top_n: Number of top recommendations to return.
+
+    Returns:
+        Pandas DataFrame of top n recommended songs closest to the seed song.
+    """
+    if song_name not in data['name'].values:
+        return "Song not found in the dataset."
+
+    # Find the feature vector of the seed song
+    seed_song_features = scaler.transform(data[data['name'] == song_name][features])
+
+    # Predict the cluster for the seed song
+    song_cluster = kmeans_model.predict(seed_song_features)[0]
+
+    # Filter out the songs from the same cluster
+    cluster_songs = data[data['cluster'] == song_cluster]
+
+    # Calculate similarity scores for all songs in the same cluster
+    similarities = cosine_similarity(seed_song_features, scaler.transform(cluster_songs[features]))
+    cluster_songs['similarity'] = np.squeeze(similarities)
+
+    # Sort the songs based on similarity scores
+    recommendations = cluster_songs.sort_values(by='similarity', ascending=False)
+
+    # Exclude the seed song and return the top n songs
+    recommendations = recommendations[recommendations['name'] != song_name]
+    return recommendations[['name', 'artists', 'year']].head(top_n)
+```
+
+The K-Means Clustering algorithm we've developed groups songs into clusters based on their inherent features. This method allows us to recommend songs that are not just similar in a superficial sense but are closely aligned in terms of their underlying characteristics. The steps involved in this recommendation process are as follows:
+
+1. **Feature Vector Extraction:** When a user selects a song, the algorithm first identifies the feature vector of this seed song. This is achieved through the transformation of its features using a pre-fitted StandardScaler, ensuring that the song's features are on the same scale as those used to train the K-Means model.
+
+2. **Cluster Identification:** The algorithm then determines which cluster the seed song belongs to by using the trained K-Means model. This step is crucial as it narrows down the pool of potential recommendations to only those songs that reside in the same cluster.
+
+3. **Cosine Similarity Calculation:** Within the identified cluster, the algorithm calculates the cosine similarity between the seed song and all other songs. This similarity score quantifies how close each song in the cluster is to the seed song in terms of their features.
+
+4. **Sorting and Recommendation:** The songs are then sorted based on their similarity scores. The higher the score, the more similar the song is to the seed song. The algorithm finally presents the top `n` songs as recommendations, excluding the seed song itself.
+
 
 ## 6. Model Evaluation
+Given that our dataset is exclusively song-centric, assessing the performance of our recommendation algorithms presents a unique challenge. Traditional evaluation methods commonly applied to unsupervised learning algorithms are not entirely suitable in this context. To address this, we've opted for industry-standard metrics specifically tailored for evaluating recommendation systems. These metrics include diversity, novelty, and top-k accuracy.
+
+**Diversity** refers to the level of dissimilarity among the recommended items for a user. This dissimilarity can be assessed based on the content of the items, such as differences in music genres, or it can be evaluated based on the variation in how users rate these items [16].
+
+**Novelty** evaluates the freshness of items in a recommendation. It includes two dimensions: user-dependent and user-independent novelty. user-dependent novelty assesses the degree to which the recommendations are distinct or new to a specific user, signifying the introduction of previously undiscovered or untried content. Conversely, user-independent novelty focuses on the overall newness of the recommendations within the entire system, irrespective of individual user familiarity [17]. In our evaluation, we will use user-independent novelty.
+
+**Top-K accuracy** is a vital metric in evaluating recommendation systems, particularly emphasizing the system's precision in predicting the most relevant items and placing them within the top `K` positions of a recommendation list [18]. This metric assumes significance in practical scenarios where users typically consider only the first few recommendations. It assesses the likelihood of the user finding the recommended items genuinely relevant or useful, especially among the top few suggestions [18]. Accurately capturing this aspect is crucial for understanding the practical effectiveness of a recommendation system in real-world user interactions.
 
 ## 7. Result and Discussion
 
 ## 8. Conclusion and Future Work
 
 ## 9. References
-[1] Y. E. Ay, "Spotify Dataset 1921-2020, 600k+ Tracks," Kaggle, 2020. [Online]. Available: https://www.kaggle.com/datasets/yamaerenay/spotify-dataset-19212020-600k-tracks. Accessed on: November 21, 2023.
-[2] Spotify. "Get Track." Spotify for Developers. [Online]. Available: https://developer.spotify.com/documentation/web-api/reference/get-track. Accessed on: November 22, 2023.
-[3] Spotify. "Get Several Audio Features." Spotify for Developers. [Online]. Available: https://developer.spotify.com/documentation/web-api/reference/get-several-audio-features. Accessed on: November 22, 2023.
+[1] Y. E. Ay, "Spotify Dataset 1921-2020, 600k+ Tracks," Kaggle, 2021. Available: https://www.kaggle.com/datasets/yamaerenay/spotify-dataset-19212020-600k-tracks. Accessed on: November 21, 2023.
+[2] Spotify. "Get Track." Spotify for Developers.  Available: https://developer.spotify.com/documentation/web-api/reference/get-track. Accessed on: November 22, 2023.
+[3] Spotify. "Get Several Audio Features." Spotify for Developers. Available: https://developer.spotify.com/documentation/web-api/reference/get-several-audio-features. Accessed on: November 22, 2023.
+[4] Maarten Grootendorst. "9 Distance Measures in Data Science." Maarten Grootendorst, https://www.maartengrootendorst.com/blog/distances/. Accessed: December 8, 2023.
+[5] "Cosine Similarity." Wikipedia, Wikimedia Foundation, https://en.wikipedia.org/wiki/Cosine_similarity. Accessed: December 8, 2023.
+[6] Shkhanukova, Milana. "Cosine Distance and Cosine Similarity.", Medium, https://medium.com/@milana.shxanukova15/cosine-distance-and-cosine-similarity-a5da0e4d9ded. Accessed: December 8, 2023.
+[7] Ajay Patel. "Relationship between Cosine Similarity and Euclidean Distance.", https://ajayp.app/posts/2020/05/relationship-between-cosine-similarity-and-euclidean-distance/. Accessed: December 8, 2023.
+[8] Rastogi, V. “Euclidean distance and cosine similarity”, Medium, https://medium.com/@vaibhav1403/euclidean-distance-and-cosine-similarity-69cbf8140fed. Accessed: December 8, 2023.
+[9] "Cluster analysis," Wikipedia, The Free Encyclopedia, [Online]. Available: https://en.wikipedia.org/wiki/Cluster_analysis. Accessed: December 9, 2023.
+[10] G. Learning, "Clustering algorithms," Medium, https://medium.com/@mygreatlearning/clustering-algorithms-d7b3ae040a95. Accessed: December 9, 2023.
+[11] N. Sharma, "K-means clustering explained," neptune.ai, https://neptune.ai/blog/k-means-clustering Accessed: December 9, 2023.
+[12] T. Firdose, "Understanding the Elbow Method: Finding the Optimal Number of Clusters," Medium, Available: https://tahera-firdose.medium.com/understanding-the-elbow-method-finding-the-optimal-number-of-clusters-68319d773ea3. Accessed: December 10, 2023.
+[13] "Principal component analysis," Wikipedia, The Free Encyclopedia, Available: https://en.wikipedia.org/wiki/Principal_component_analysis. Accessed: December 11, 2023.
+[14] "Dimensionality reduction: PCA, tsne, umap," Auriga IT, https://aurigait.com/blog/blog-easy-explanation-of-dimensionality-reduction-and-techniques/ Accessed: December 11, 2023.
+[15] Rocca, Baptiste. "Introduction to Recommender Systems." Medium, Towards Data Science, https://towardsdatascience.com/introduction-to-recommender-systems-6c66cf15ada Accessed: December 10, 2023.
+[16] B, Anna. "Recommender Systems - It’s Not All about the Accuracy." Medium, https://gab41.lab41.org/recommender-systems-its-not-all-about-the-accuracy-562c7dceeaff. 
+Accessed: December 11, 2023.
+[17] Pabalan, Christabelle. "Beyond Accuracy: Embracing Serendipity and Novelty in Recommendations for Long Term User Retention." Towards Data Science, https://towardsdatascience.com/beyond-accuracy-embracing-serendipity-and-novelty-in-recommendations-for-long-term-user-retention-701a23b1cb34. Accessed: December 11, 2023.
+[18] S. Kapre, "Common metrics to evaluate recommendation systems," Medium, [Online]. Available: https://flowthytensor.medium.com/some-metrics-to-evaluate-recommendation-systems-9e0cf0c8b6cf. Accessed: December 11, 2023.
+
 
 ## 10. Appendix: Tables and Figures
 
