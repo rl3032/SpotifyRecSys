@@ -468,9 +468,46 @@ In summary, K-Means Clustering Algorithm groups songs into clusters based on the
 ## 6. Model Evaluation
 Given that our dataset is exclusively song-centric, assessing the performance of our recommendation algorithms presents a unique challenge. Traditional evaluation methods commonly applied to unsupervised learning algorithms are not entirely suitable in this context. To address this, we've opted for industry-standard metrics specifically tailored for evaluating recommendation systems. These metrics include diversity, novelty, and top-k accuracy.
 
-**Diversity** refers to the level of dissimilarity among the recommended items for a user. This dissimilarity can be assessed based on the content of the items, such as differences in music genres, or it can be evaluated based on the variation in how users rate these items [16].
+**Diversity** refers to the level of dissimilarity among the recommended items for a user. This dissimilarity can be assessed based on the content of the items, such as differences in music genres, or it can be evaluated based on the variation in how users rate these items [16]. The following code is how we calculate diversity score:
 
-**Novelty** evaluates the freshness of items in a recommendation. It includes two dimensions: user-dependent and user-independent novelty. user-dependent novelty assesses the degree to which the recommendations are distinct or new to a specific user, signifying the introduction of previously undiscovered or untried content. Conversely, user-independent novelty focuses on the overall newness of the recommendations within the entire system, irrespective of individual user familiarity [17]. In our evaluation, we will use user-independent novelty.
+```python
+from sklearn.metrics.pairwise import euclidean_distances
+
+def calculate_diversity_score(recommendations, features):
+    """
+    Calculate the diversity of the recommended songs.
+
+    Args:
+        recommendations: DataFrame containing recommended songs and their features.
+        features: List of columns to be used for calculating diversity.
+
+    Returns:
+        float: Diversity score.
+    """
+    features = recommendations[features].values
+    distances = euclidean_distances(features)
+    diversity_score = distances.sum() / (len(recommendations) * (len(recommendations) - 1))
+    return diversity_score
+```
+
+**Novelty** evaluates the freshness of items in a recommendation. It includes two dimensions: user-dependent and user-independent novelty. user-dependent novelty assesses the degree to which the recommendations are distinct or new to a specific user, signifying the introduction of previously undiscovered or untried content. Conversely, user-independent novelty focuses on the overall newness of the recommendations within the entire system, irrespective of individual user familiarity [17]. In our evaluation, we will use user-independent novelty. The following code is how we calculate novelty score:
+
+```python
+def calculate_novelty_score(recommendations, baseline_popularity):
+    """
+    Calculate the novelty of the recommended songs.
+
+    Args:
+        recommendations: DataFrame containing recommended songs and their features.
+        features: List of columns to be used for calculating novelty.
+
+    Returns:
+        float: Novelty score.
+    """
+    novelty_scores = recommendations['popularity'].apply(lambda x: abs(x - baseline_popularity))
+    average_novelty = novelty_scores.mean()
+    return average_novelty
+```
 
 **Top-K accuracy** is a vital metric in evaluating recommendation systems, particularly emphasizing the system's precision in predicting the most relevant items and placing them within the top `K` positions of a recommendation list [18]. This metric assumes significance in practical scenarios where users typically consider only the first few recommendations. It assesses the likelihood of the user finding the recommended items genuinely relevant or useful, especially among the top few suggestions [18]. Accurately capturing this aspect is crucial for understanding the practical effectiveness of a recommendation system in real-world user interactions.
 
@@ -498,7 +535,6 @@ Given that our dataset is exclusively song-centric, assessing the performance of
 Accessed: December 11, 2023.
 [17] Pabalan, Christabelle. "Beyond Accuracy: Embracing Serendipity and Novelty in Recommendations for Long Term User Retention." Towards Data Science, https://towardsdatascience.com/beyond-accuracy-embracing-serendipity-and-novelty-in-recommendations-for-long-term-user-retention-701a23b1cb34. Accessed: December 11, 2023.
 [18] S. Kapre, "Common metrics to evaluate recommendation systems," Medium, [Online]. Available: https://flowthytensor.medium.com/some-metrics-to-evaluate-recommendation-systems-9e0cf0c8b6cf. Accessed: December 11, 2023.
-
 
 ## 10. Appendix: Tables and Figures
 
