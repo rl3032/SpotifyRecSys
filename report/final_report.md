@@ -509,11 +509,91 @@ def calculate_novelty_score(recommendations, baseline_popularity):
     return average_novelty
 ```
 
-**Top-K accuracy** is a vital metric in evaluating recommendation systems, particularly emphasizing the system's precision in predicting the most relevant items and placing them within the top `K` positions of a recommendation list [18]. This metric assumes significance in practical scenarios where users typically consider only the first few recommendations. It assesses the likelihood of the user finding the recommended items genuinely relevant or useful, especially among the top few suggestions [18]. Accurately capturing this aspect is crucial for understanding the practical effectiveness of a recommendation system in real-world user interactions.
+**Top-K accuracy** is a vital metric in evaluating recommendation systems, particularly emphasizing the system's precision in predicting the most relevant items and placing them within the top `K` positions of a recommendation list [18]. This metric assumes significance in practical scenarios where users typically consider only the first few recommendations. It assesses the likelihood of the user finding the recommended items genuinely relevant or useful, especially among the top few suggestions [18]. Accurately capturing this aspect is crucial for understanding the practical effectiveness of a recommendation system in real-world user interactions. The following code is how we calculate top-k accuracy:
+
+```python
+def calculate_accuracy(recommended_songs, test_songs):
+    """
+    Calculate the accuracy based on the intersection of recommended songs and test songs.
+
+    Args:
+        recommended_songs: DataFrame of recommended songs.
+        test_songs: DataFrame of test songs.
+
+    Returns:
+        float: Accuracy score.
+    """
+    recommended_song_set = set(recommended_songs['name'])
+    test_song_set = set(test_songs['song_name'])
+    intersection = recommended_song_set.intersection(test_song_set)
+    accuracy = len(intersection) / len(recommended_song_set) if recommended_song_set else 0
+    return accuracy
+```
 
 ## 7. Result and Discussion
 
+In our model evaluation phase, we have selected five seed songs from our dataset for analysis. These songs are chosen based on their popularity and represent a diverse range of artists and release years. The selected seed songs are as follows:
+
+| Song Title                 | Artist(s)                        | Publish Year |
+|----------------------------|----------------------------------|--------------|
+| Shape of You               | Ed Sheeran                       | 2017         |
+| Something Just Like This   | The Chainsmokers & Coldplay      | 2017         |
+| Don't Start Now            | Dua Lipa                         | 2019         |
+| Watermelon Sugar           | Harry Styles                     | 2019         |
+| Bad Guy                    | Billie Eilish                    | 2019         |
+
+For each of these seed songs, we apply two distinct recommendation algorithms: K-Means Clustering and Item-Centered Content-Based Filtering. Our objective is to assess the performance of these models by examining three key metrics: diversity scores, novelty scores, and top-k accuracy.
+
+This comprehensive evaluation approach allows us to understand the strengths and limitations of each algorithm in terms of their ability to generate diverse, novel, and accurate song recommendations. By doing so, we aim to identify the most effective recommendation strategies.
+
+
+**Diversity Score Table**
+| Song Title                 | KMeans Diversity Score | Content-Based Diversity Score |
+|----------------------------|------------------------|-------------------------------|
+| Shape of You               | 17.3366                | 17.9280                       |
+| Something Just Like This   | 20.7120                | 19.8489                       |
+| Don't Start Now            | 20.2753                | 19.4748                       |
+| Watermelon Sugar           | 17.3242                | 18.3564                       |
+| Bad Guy                    | 17.9413                | 16.2644                       |
+
+Diversity scores measure how varied the recommended songs are. Higher scores indicate a greater variety in recommendations.
+
+- KMeans Clustering shows relatively consistent diversity scores across all songs, with "Something Just Like This" having the highest diversity score (20.7120). This suggests that the KMeans model is capable of recommending a diverse set of songs.
+- Content-Based Filtering also demonstrates consistent diversity, but with slightly different scores. For "Bad Guy," this model shows a notably lower diversity score (16.2644) compared to others, which might indicate a narrower range of recommendations for this particular song.
+
+**Novelty Score Table**
+| Song Title                 | KMeans Novelty Score | Content-Based Novelty Score |
+|----------------------------|----------------------|-----------------------------|
+| Shape of You               | 0.3717               | 0.3555                      |
+| Something Just Like This   | 0.3813               | 0.3471                      |
+| Don't Start Now            | 0.4051               | 0.3756                      |
+| Watermelon Sugar           | 0.4378               | 0.3854                      |
+| Bad Guy                    | 0.2011               | 0.2263                      |
+
+Novelty scores assess how new or unexpected the recommendations are compared to popular or commonly known songs. Higher scores indicate more novel recommendations.
+
+- Both models show similar patterns in novelty scores. "Watermelon Sugar" scores the highest in novelty for both models, suggesting that the recommendations for this song are likely to be more unique or less mainstream.
+- The lowest novelty scores are observed for "Bad Guy," especially in the KMeans model. This could imply that the recommendations for this song are more predictable or common.
+
+**Top-K Accuracy Table (K = 30)**
+| Song Title                 | KMeans Accuracy | Content-Based Accuracy |
+|----------------------------|-----------------|------------------------|
+| Shape of You               | 0.05            | 0.08                   |
+| Something Just Like This   | 0.0808          | 0.1212                 |
+| Don't Start Now            | 0.08            | 0.13                   |
+| Watermelon Sugar           | 0.07            | 0.25                   |
+| Bad Guy                    | 0.0             | 0.06                   |
+
+Top-K accuracy measures the proportion of recommended songs that are actually relevant or desirable. Higher accuracy indicates better performance.
+
+- Content-Based Filtering generally outperforms KMeans Clustering in accuracy. Notably, for "Watermelon Sugar," the Content-Based model reaches an accuracy of 0.25, suggesting that a quarter of its recommendations are highly relevant.
+- KMeans Clustering shows lower accuracy across all songs, with "Bad Guy" having 0.0 accuracy, indicating none of the top 30 recommendations were relevant. This might suggest limitations in the KMeans model's ability to capture user preferences effectively for certain songs.
+
+
+Diversity is fairly consistent across both models, but there are variations in how each song is handled, indicating that the choice of seed song can significantly influence the diversity of recommendations. The novelty and accuracy metrics suggest that Content-Based Filtering might be better at recommending less mainstream, yet relevant songs to users. Overall, Content-Based Filtering seems to be more effective in providing accurate and novel recommendations compared to KMeans Clustering. 
+
 ## 8. Conclusion and Future Work
+
 
 ## 9. References
 [1] Y. E. Ay, "Spotify Dataset 1921-2020, 600k+ Tracks," Kaggle, 2021. Available: https://www.kaggle.com/datasets/yamaerenay/spotify-dataset-19212020-600k-tracks. Accessed on: November 21, 2023.
