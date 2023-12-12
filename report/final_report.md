@@ -594,6 +594,22 @@ Diversity is fairly consistent across both models, but there are variations in h
 
 ## 8. Conclusion and Future Work
 
+Our project embarked on the ambitious journey of developing a song-based recommendation system using the extensive Spotify dataset. Through rigorous data understanding, exploratory analysis, and feature preprocessing, we laid a solid foundation for our model development. We employed two distinct algorithms: K-Means Clustering and Item-Centered Content-Based Filtering, each offering unique perspectives in song recommendations.
+
+The evaluation of these models using diversity scores, novelty scores, and top-k accuracy revealed insightful findings. While both models demonstrated commendable diversity in recommendations, the Content-Based Filtering model generally outperformed K-Means Clustering in terms of novelty and accuracy. This suggests its superior capability in recommending songs that are not only diverse but also novel and relevant to the users' preferences.
+
+Our analysis underscores the importance of personalized recommendation systems in the digital music industry. By effectively leveraging song features and user preferences, such systems can enhance user engagement and satisfaction, paving the way for a more tailored and enjoyable music listening experience.
+
+Looking ahead, there are several avenues for further enhancing our recommendation system:
+
+1. **Incorporating User Data:** Integrating user listening history and preferences could provide a more personalized recommendation experience. This would allow the system to tailor suggestions based on individual user tastes and listening habits.
+
+2. **Algorithm Optimization:** Exploring other machine learning algorithms and fine-tuning the existing models could improve recommendation accuracy and efficiency. Techniques like deep learning and neural networks hold potential for more sophisticated pattern recognition in music preferences.
+
+3. **User Interface Development:** Developing a user-friendly interface for the recommendation system would make it more accessible and practical for real-world application. This could involve creating a web application using Streamlit.
+
+4. **Longitudinal Study:** Conducting a long-term study to track the system's performance over time and its impact on user engagement would provide valuable insights for continuous improvement.
+
 
 ## 9. References
 [1] Y. E. Ay, "Spotify Dataset 1921-2020, 600k+ Tracks," Kaggle, 2021. Available: https://www.kaggle.com/datasets/yamaerenay/spotify-dataset-19212020-600k-tracks. Accessed on: November 21, 2023.
